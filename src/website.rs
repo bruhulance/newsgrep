@@ -1,32 +1,32 @@
-use scraper::{Html, Selector, error::SelectorErrorKind};
 use regex::RegexSet;
 use reqwest;
+use scraper::{error::SelectorErrorKind, Html, Selector};
 
 // this is to get rid of warnings when compiling
 #[allow(dead_code)]
 pub enum SearchTerms {
     Words(Vec<String>),
     Patterns(RegexSet),
-    None
+    None,
 }
 
 pub struct Website {
     pub url: String,        // the URL of the website
     pub terms: SearchTerms, // for filtering out articles
-    pub selector: String    // for scraping articles from the HTTP request 
+    pub selector: String,   // for scraping articles from the HTTP request
 }
 
 // this is to get rid of warnings when compiling
 #[allow(dead_code)]
 impl Website {
     /// constructors
-   
+
     /// Creates a Website struct from a URL and some search terms
     pub fn new(url: String, terms: SearchTerms, selector: String) -> Website {
         Website {
             url,
             terms,
-            selector
+            selector,
         }
     }
 
@@ -74,7 +74,7 @@ impl Website {
         for element in document.select(&sel) {
             match element.value().attr("href") {
                 Some(attr) => articles.push(Self::with_url(attr.to_string())),
-                None => eprintln!("Couldn't extract href from this element")
+                None => eprintln!("Couldn't extract href from this element"),
             }
         }
 
@@ -89,4 +89,3 @@ impl Website {
         reqwest::get(&self.url).await?.text().await
     }
 }
-
