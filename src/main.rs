@@ -1,33 +1,38 @@
+use regex::Regex;
 use tokio;
 mod website;
-use website::Article;
+use website::{Article, Scrapeable, SearchTerms};
 
 #[tokio::main]
 async fn main() {
     const URL: &str = "https://www.nytimes.com/ca/";
-    let site =
-        Article::with_url_and_sel(String::from(URL), String::from("section.story-wrapper > a"));
+    let site = Article::new(
+        String::from(URL),
+        SearchTerms::Words(Regex::new(r"pele").unwrap()),
+        String::from("section.story-wrapper > a"),
+    );
 
     // matching the return type of the response
-    let res = match site.get().await {
-        Ok(dump) => dump,
-        Err(error) => {
-            eprintln!("There has been an error: {:?}", error);
-            String::new()
-        }
-    };
+    match site.get().await {
+        Ok(body) => {
+            // parsing the response to find articles
+            match &site.find_articles(&body) {
+                Ok(articles) => {
+                    site.print_articles(articles);
+                    println!("\nFiltering the articles...");
 
-    // parsing the response to find articles
-    //match &site.find_articles(&res) {
-    //    Ok(articles) => {
-    //        println!("Found articles...");
-    //        articles
-    //            .iter()
-    //            .for_each(|article| println!("article: {:?}", article.url));
-    //    }
-    //    Err(error) => eprintln!(
-    //        "Something happened while trying to parse for articles, {:?}",
-    //        error
-    //    ),
-    //};
+                    // filtering the articles
+                    match &site.filter_by_url(articles) {
+                        Some(filtered) => site.print_articles(filtered),
+                        None => println!("Filtering resulted in no articles."),
+                    }
+                }
+                Err(error) => eprintln!(
+                    "Something happened while trying to parse for articles, {:?}",
+                    error
+                ),
+            };
+        }
+        Err(error) => eprintln!("There has been an error: {:?}", error),
+    }
 }
