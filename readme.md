@@ -56,7 +56,7 @@ The functionality of this bot is as follows:
 ## Roadmap
 
 1. [x] Get HTTP requests working
-1. [ ] Get scraping working
+1. [x] Get scraping working
 1. [ ] Get load websites as modules
 1. [ ] Get a database working
 1. [ ] Get export to HTML working
